@@ -1,7 +1,9 @@
-#!/bin/bash
+#!/bin/zsh
 
-function opwd()
-{
+# zsh script
+[[ -z $ZSH_VERSION ]] && return
+
+opwd() {
     if [[ -z $TMUX ]]; then
         return 1
     fi
@@ -10,16 +12,17 @@ function opwd()
         return 1
     fi
 
-    local current_pane_number="$(tmux list-panes | grep 'active' | cut -d: -f1)"
-    local current_window_number="$(tmux display -p '#I')"
+    local current_pane_number current_window_number
+    current_pane_number="$(tmux list-panes | grep 'active' | cut -d: -f1)"
+    current_window_number="$(tmux display -p '#I')"
 
-    cat < ~/.tmux.info |
+    cat <~/.tmux.info |
     # 1:1:/Users/b4b4r07/go/src/github.com/b4b4r07/twithub
     # 1:1:/Users/b4b4r07
     # 1:2:/Users/b4b4r07/bin
 
     if (($# > 0)) &&
-        expr "$1" : '^[0-9]$' >/dev/null &&
+        [[ $1 =~ ^[0-9]+$ ]] &&
         tmux list-panes | grep -q "^$1"
     then
         # >opwd 1
@@ -42,12 +45,12 @@ function opwd()
     fi
 }
 
-function record_opwd()
-{
+record_opwd() {
     touch ~/.tmux.info
     if [ -n "$TMUX" ]; then
         echo "$(tmux display -p "#I:#P"):$PWD" >>~/.tmux.info
     fi
 }
+
 autoload -Uz add-zsh-hook
 add-zsh-hook precmd record_opwd
