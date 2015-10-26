@@ -3,12 +3,15 @@
 # zsh script
 [[ -z $ZSH_VERSION ]] && return
 
+export TMUX_WINDOW_FILE=~/.tmux.info
+
+is_tmux_running() { [[ -n $TMUX ]]; }
 tmuxlogger() {
-    if [[ -z $TMUX ]]; then
+    if ! is_tmux_running; then
         return 1
     fi
 
-    if [[ ! -f ~/.tmux.info ]]; then
+    if [[ ! -f $TMUX_WINDOW_FILE ]]; then
         return 1
     fi
 
@@ -16,7 +19,7 @@ tmuxlogger() {
     current_pane_number="$(tmux list-panes | grep 'active' | cut -d: -f1)"
     current_window_number="$(tmux display -p '#I')"
 
-    cat <~/.tmux.info |
+    cat <"$TMUX_WINDOW_FILE" |
     # 1:1:/Users/b4b4r07/go/src/github.com/b4b4r07/twithub
     # 1:1:/Users/b4b4r07
     # 1:2:/Users/b4b4r07/bin
@@ -46,14 +49,14 @@ tmuxlogger() {
 }
 
 _tmuxlogger() {
-    touch ~/.tmux.info
-    if [ -n "$TMUX" ]; then
-        echo "$(tmux display -p "#I:#P"):$PWD" >>~/.tmux.info
+    touch "$TMUX_WINDOW_FILE"
+    if is_tmux_running; then
+        echo "$(tmux display -p "#I:#P"):$PWD" >>"$TMUX_WINDOW_FILE"
     fi
 }
 
 autoload -Uz add-zsh-hook
 add-zsh-hook precmd _tmuxlogger
 
-alias opwd='tmuxlogger'
-alias -g T=' $(tmuxlogger)'
+alias tm='tmuxlogger'
+alias -g T='$(tmuxlogger)'
