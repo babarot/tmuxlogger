@@ -3,7 +3,7 @@
 # zsh script
 [[ -z $ZSH_VERSION ]] && return
 
-opwd() {
+tmuxlogger() {
     if [[ -z $TMUX ]]; then
         return 1
     fi
@@ -25,7 +25,7 @@ opwd() {
         [[ $1 =~ ^[0-9]+$ ]] &&
         tmux list-panes | grep -q "^$1"
     then
-        # >opwd 1
+        # >tmuxlogger 1
         # 1:1:/Users/b4b4r07/go/src/github.com/b4b4r07/twithub
         # 1:1:/Users/b4b4r07
         grep "$current_window_number:$1"
@@ -45,7 +45,7 @@ opwd() {
     fi
 }
 
-record_opwd() {
+_tmuxlogger() {
     touch ~/.tmux.info
     if [ -n "$TMUX" ]; then
         echo "$(tmux display -p "#I:#P"):$PWD" >>~/.tmux.info
@@ -53,4 +53,7 @@ record_opwd() {
 }
 
 autoload -Uz add-zsh-hook
-add-zsh-hook precmd record_opwd
+add-zsh-hook precmd _tmuxlogger
+
+alias opwd='tmuxlogger'
+alias -g T=' $(tmuxlogger)'
